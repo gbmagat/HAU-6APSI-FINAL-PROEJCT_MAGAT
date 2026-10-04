@@ -112,9 +112,9 @@ This project was built with AI assistance. This file is the record of it.
 
 ### Written by me
 
-- **File:**
-- **Commit:**
-- **What it does and why it is built this way:**
+- **File:** `src/components/status-badge.tsx`, plus the other parts of my first draft that are still as I wrote them: `src/app/page.tsx`, `src/app/(app)/museums/[slug]/page.tsx`, the SVG icons and illustrations in `public/assets/` (from my Figma design), and `DESIGN_SYSTEM.md`.
+- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/172858a (I wrote the first draft of the website in July and August 2026, before this repository existed, so it arrived in the first commit.)
+- **What it does and why it is built this way:** `status-badge.tsx` draws the small labels that say where a place stands. `VisitStatusBadge` looks up each visit status ("Want to Visit", "Planned", "Visited") in two tables, one for the label and one for the icon. Because the tables are typed as `Record<VisitStatus, …>`, TypeScript refuses to build if a status is ever added without a label. `PlaceBadges` puts the status badge together with a Favorite badge and a review badge. The review badge only shows while a review is still pending ("Your review is needed" or "Waiting for partner"): once both reviews are in, the shared score takes its place, and before anyone reviews there is nothing to wait for. The icons are hidden from screen readers because the text already says the same thing, and the colours come from `status-badge--…` classes that follow my design system. `src/app/page.tsx` sends visitors from the home address to the sign-in page, and the `museums/[slug]` page redirects old links from when the app was "Our Museum Passport" to the new `/places/` addresses, so old links keep working now that the app covers more than museums. The rest of my draft (the page layouts for the feed, map, wishlist and place pages) was later extended and rewritten with Claude Code, so I only name the files that are still my own.
 
 ### The AI-written part I understand best
 
