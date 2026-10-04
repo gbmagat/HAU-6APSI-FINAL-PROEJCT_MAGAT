@@ -118,6 +118,6 @@ This project was built with AI assistance. This file is the record of it.
 
 ### The AI-written part I understand best
 
-- **File:**
-- **Commit:**
-- **What it does and why we kept it:**
+- **File:** `src/lib/dijkstra.ts`, with `src/lib/road-graph.ts`, which feeds it
+- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/4728b68
+- **What it does and why we kept it:** It finds the shortest road route between my pinned location and a place. `road-graph.ts` turns OpenStreetMap roads into a graph: every road point is a node, and each stretch between two neighbouring points is an edge whose weight is its real length in kilometres (Haversine formula). A one-way street only gets an edge in its own direction. The pin and the place are each attached to the nearest point on the main connected road network. Dijkstra then keeps the shortest known distance to every point and a priority queue (a binary min-heap) of points to visit. It always takes the closest unvisited point next, and for each of its roads checks whether going through it gives a neighbour a shorter distance; if so, it records the new distance and remembers where it came from. When the place comes out of the queue, the shortest distance is final, and following the "came from" links backwards gives the route. Out-of-date queue entries are skipped instead of removed, and negative weights are refused, because they would break the rule that a point taken from the queue is final. We kept it because it is correct (tests cover the textbook six-node example and one-way streets), fast (the heap makes each step O(log n), so about 30,000 road points take well under a second), and short enough to explain line by line.
