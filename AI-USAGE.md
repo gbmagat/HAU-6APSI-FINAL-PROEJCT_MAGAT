@@ -14,22 +14,6 @@ This project was built with AI assistance. This file is the record of it.
 - **What I kept, what I changed, and why:** I kept the fixes and the tests. The blind-review rule is the core of the app, and the tests let me keep changing things without breaking it.
 - **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/172858a
 
-### 2026-09-28 - A real map instead of the placeholder
-
-- **Tool:** Claude Code
-- **What I asked for:** Replace the drawn placeholder map with a working map of our places.
-- **What it gave back:** A Leaflet map with OpenStreetMap tiles, pins coloured by visit status, keyboard support, and a "your location" marker.
-- **What I kept, what I changed, and why:** I kept Leaflet and OpenStreetMap because they are free and need no API key. The first tile provider it used did need a key and was replaced (section 2).
-- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/c0b4df1
-
-### 2026-10-02 - Place search and photo uploads
-
-- **Tool:** Claude Code
-- **What I asked for:** Search that finds real places, saving a found place, photo uploads, and a local/international label for places.
-- **What it gave back:** Search through OpenStreetMap's Nominatim, run on the server; one-step saving; private photo storage outside the public folder; a local/international filter.
-- **What I kept, what I changed, and why:** I kept the search on the server so only our app calls Nominatim, within its usage policy. Photos are served only to signed-in members, because the memories are private.
-- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/8b4b6cc
-
 ### 2026-10-02 - Nearest place first, from a pinned location
 
 - **Tool:** Claude Code
@@ -45,14 +29,6 @@ This project was built with AI assistance. This file is the record of it.
 - **What it gave back:** Dijkstra with a binary-heap priority queue, a road graph built from OpenStreetMap data with one-way streets respected, and an API route that draws the path.
 - **What I kept, what I changed, and why:** I kept the algorithm. When I tested it on a real trip it did not behave as I expected, so I had it reworked (section 2).
 - **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/4728b68
-
-### 2026-10-03 - Several photos per experience
-
-- **Tool:** Claude Code
-- **What I asked for:** Uploading two or more photos to one experience.
-- **What it gave back:** Choosing several photos at once, a description per photo, uploads that are safe to retry, and a gallery with a full-size viewer.
-- **What I kept, what I changed, and why:** I kept its limit of six per experience, which keeps the private photo storage a sensible size.
-- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/9282aa4
 
 ### 2026-10-03 - Plan reminders by email
 
@@ -70,14 +46,6 @@ This project was built with AI assistance. This file is the record of it.
 - **What I kept, what I changed, and why:** I acted on its findings. I tightened what the repository contains, and the app now connects with a database role that can only read and change rows.
 - **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/2031341
 
-### 2026-10-04 - Deploying beside an existing app on my server
-
-- **Tool:** Claude Code
-- **What I asked for:** A deployment on my own Ubuntu server, which already runs another site, without affecting that site.
-- **What it gave back:** A systemd service, an nginx site and a deployment guide, after a read-only check of the server.
-- **What I kept, what I changed, and why:** I kept the separate account, folders, database and port, so Our Places cannot affect the other site. The server only accepts SSH from outside, so I chose to have the provider open the web ports.
-- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/a5cf5a0
-
 ## 2. Where the AI got it wrong
 
 ### Case 1 - The "shortest route" only showed a straight line
@@ -87,21 +55,14 @@ This project was built with AI assistance. This file is the record of it.
 - **What I did instead:** I reported it with a screenshot and had it changed. The route now draws automatically, downloaded roads are saved per map tile so later routes take about 0.1 seconds, and longer trips use main roads.
 - **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/31ac81d
 
-### Case 2 - Sign-in failed behind a proxy
-
-- **What it gave me:** A check that writes come from our own site, comparing the browser's `Origin` header with the server's own address.
-- **What was wrong with it:** Behind a reverse proxy, Next.js reports its internal `localhost` address, so every sign-in and save was rejected with 403. The unit tests passed; it only showed up when we ran the production build end to end.
-- **What I did instead:** The check now compares against the host the browser actually used (`X-Forwarded-Host`, then `Host`), with tests for the proxy case.
-- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/7032556
-
-### Case 3 - A map tile provider that needed an API key
+### Case 2 - A map tile provider that needed an API key
 
 - **What it gave me:** A basemap from CARTO's tile servers.
 - **What was wrong with it:** The tiles came back as "API KEY REQUIRED" images, so the map was unusable.
 - **What I did instead:** The map now uses OpenStreetMap tiles with a soft colour filter to match the design, plus a notice if tiles fail to load.
 - **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/c0b4df1
 
-### Case 4 - A note promising something the app cannot do
+### Case 3 - A note promising something the app cannot do
 
 - **What it gave me:** A line under the review comparison: "The shared score recalculates if either member edits a revealed review."
 - **What was wrong with it:** Reviews cannot be edited; each member's review is final, by design.
@@ -114,7 +75,7 @@ This project was built with AI assistance. This file is the record of it.
 
 - **File:** `src/components/status-badge.tsx`, plus the other parts of my first draft that are still as I wrote them: `src/app/page.tsx`, `src/app/(app)/museums/[slug]/page.tsx`, the SVG icons and illustrations in `public/assets/` (from my Figma design), and `DESIGN_SYSTEM.md`.
 - **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/172858a (I wrote the first draft of the website in July and August 2026, before this repository existed, so it arrived in the first commit.)
-- **What it does and why it is built this way:** `status-badge.tsx` draws the small labels that say where a place stands. `VisitStatusBadge` looks up each visit status ("Want to Visit", "Planned", "Visited") in two tables, one for the label and one for the icon. Because the tables are typed as `Record<VisitStatus, …>`, TypeScript refuses to build if a status is ever added without a label. `PlaceBadges` puts the status badge together with a Favorite badge and a review badge. The review badge only shows while a review is still pending ("Your review is needed" or "Waiting for partner"): once both reviews are in, the shared score takes its place, and before anyone reviews there is nothing to wait for. The icons are hidden from screen readers because the text already says the same thing, and the colours come from `status-badge--…` classes that follow my design system. `src/app/page.tsx` sends visitors from the home address to the sign-in page, and the `museums/[slug]` page redirects old links from when the app was "Our Museum Passport" to the new `/places/` addresses, so old links keep working now that the app covers more than museums. The rest of my draft (the page layouts for the feed, map, wishlist and place pages) was later extended and rewritten with Claude Code, so I only name the files that are still my own.
+- **What it does and why it is built this way:** `status-badge.tsx` draws the small labels that say where a place stands. `VisitStatusBadge` looks up each visit status ("Want to Visit", "Planned", "Visited") in two tables, one for the label and one for the icon. Because the tables are typed as `Record<VisitStatus, …>`, TypeScript refuses to build if a status is ever added without a label. `PlaceBadges` puts the status badge together with a Favorite badge and a review badge. The review badge only shows while a review is still pending ("Your review is needed" or "Waiting for partner"): once both reviews are in, the shared score takes its place, and before anyone reviews there is nothing to wait for. The icons are hidden from screen readers because the text already says the same thing, and the colours come from `status-badge--…` classes that follow my design system. `src/app/page.tsx` sends visitors from the home address to the sign-in page, and the `museums/[slug]` page redirects old links from when the app was "Our Museum Passport" to the new `/places/` addresses, so old links keep working now that the app covers more than museums.
 
 ### The AI-written part I understand best
 
