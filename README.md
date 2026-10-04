@@ -44,8 +44,8 @@ Next.js 16 (App Router), React, TypeScript · PostgreSQL through `pg` · Leaflet
 ### Install
 
 ```bash
-git clone https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT.git
-cd HAU-6APSI-FINAL-PROEJCT
+git clone https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT.git
+cd HAU-6APSI-FINAL-PROEJCT_MAGAT
 npm ci
 ```
 

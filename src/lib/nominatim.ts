@@ -4,7 +4,7 @@ import type { NominatimResult } from "@/lib/place-search";
 
 // OpenStreetMap's Nominatim policy: identify the app, at most one request per second, cache results.
 // https://operations.osmfoundation.org/policies/nominatim/
-export const USER_AGENT = "OurPlaces/0.1 (private two-person app; https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT)";
+export const USER_AGENT = "OurPlaces/0.1 (private two-person app; https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT)";
 const MIN_INTERVAL_MS = 1100;
 let nextSlot = 0;
 

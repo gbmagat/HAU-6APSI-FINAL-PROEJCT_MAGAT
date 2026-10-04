@@ -32,7 +32,7 @@ Follow [db/README.md](../db/README.md) "Prepare the database": PostgreSQL stays 
 ## 3. Code and build
 
 ```bash
-sudo -u ourplaces git clone https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT.git /opt/our-places/app
+sudo -u ourplaces git clone https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT.git /opt/our-places/app
 cd /opt/our-places/app
 sudo -u ourplaces npm ci
 sudo -u ourplaces npm run check
