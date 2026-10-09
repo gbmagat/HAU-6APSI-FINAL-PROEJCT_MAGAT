@@ -8,7 +8,7 @@ It covers restaurants, cafés, museums, parks, and any other place worth remembe
 
 ## Features
 
-- **Two invited accounts per shared space.** There is no public sign-up; accounts are created with a provisioning script.
+- **Two accounts per private space.** Anyone given the sign-up code can create an account, which starts their own empty space; the owner then invites their partner with a one-time link from Profile. Without a sign-up code set on the server, sign-up is closed and only invite links (or the provisioning script) create accounts.
 - **Map and search.** Places sit at their real coordinates on an OpenStreetMap map. Typing filters your saved places; pressing Enter searches OpenStreetMap for any real place, which you can save in one step. Filter by status, use Near me, or pin your location.
 - **Nearest first.** After you pin your location (or use Near me), search prefers nearby results, lists saved places and results with their distance, and jumps to the nearest match. Distances use the Haversine formula.
 - **Shortest route.** Once your location is pinned, picking a place draws the shortest road route to it. The server builds a graph from OpenStreetMap roads (road points as nodes, segments weighted by length, one-way streets in one direction) and runs Dijkstra's algorithm with a binary-heap priority queue. Trips up to 10 km use every road; trips up to 40 km use main roads between the two ends. Roads are downloaded once per map tile and saved, so later routes in the same area take a fraction of a second. Longer trips link to directions instead.
@@ -63,6 +63,7 @@ Copy `.env.example` to `.env.local`.
 | `MAIL_FROM` | Sender shown on reminder emails. Defaults to `Our Places <SMTP_USER>`. |
 | `APP_URL` | The site's public address, used for the link in reminder emails, for example `https://ourplaces.example.com`. |
 | `PLAN_REMINDERS` | Set to `off` to stop this server from sending any reminder emails. |
+| `SIGNUP_CODE` | The code someone must enter to create a new account and space. Leave empty to close sign-up; invite links still work. Share it privately, never in the repository. |
 | `ROAD_CACHE_DIR` | Server-only folder for saved OpenStreetMap road tiles used by routes. Defaults to `./storage/roads`; safe to delete. |
 
 The app runs in one of three modes:
@@ -92,6 +93,7 @@ The app runs in one of three modes:
    ```bash
    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/migrations/001-plan-reminders.sql
    psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/migrations/002-review-reminders.sql
+   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/migrations/003-space-invites.sql
    ```
 
 See [deploy/DEPLOY.md](deploy/DEPLOY.md) to deploy on an Ubuntu server alongside other apps, and [db/README.md](db/README.md) for database setup. The `supabase/` folder is an earlier design kept for history; do not apply it.
@@ -116,6 +118,8 @@ Sign in, find a place on the map, and log an experience with your own review. Yo
 |---|---|
 | `POST /api/auth/login` | Sign in; an account locks for 15 minutes after five failed attempts |
 | `POST /api/auth/logout` | End the current session |
+| `POST /api/auth/signup` | Create an account: with the sign-up code it starts a new private space; with an invite link it joins the inviting owner's space. Passwords need 12 or more characters |
+| `POST /api/invites` | The owner creates a one-time partner invite link that works for 7 days; only a hash of it is stored |
 | `GET /api/state` | Load the shared space, including only the reviews the signed-in member may see |
 | `POST /api/visits` | Publish an experience and its first review; safe to retry with the same draft key |
 | `POST /api/visits/{id}/review` | Submit the second member's review |
@@ -145,7 +149,7 @@ supabase/         Earlier Supabase design, not used
 
 ## Testing
 
-`npm run check` runs 127 tests. They cover the rating and review-visibility rules, place and feed logic, form validation, password hashing, and the database schema. They also run the real API route handlers against an in-memory PostgreSQL (PGlite), checking plan and review reminder timing and one-time email delivery, Dijkstra's shortest paths, saved road tiles, distance ranking, blind reviews, retry safety, cross-site and signed-out rejection, proxy sign-in, per-member favorites, saving places, OpenStreetMap search, private photo upload, ordering, retries, and delivery, post deletion, and sign-in lockout.
+`npm run check` runs 131 tests. They cover the rating and review-visibility rules, place and feed logic, form validation, password hashing, and the database schema. They also run the real API route handlers against an in-memory PostgreSQL (PGlite), checking sign-up codes and one-time invite links, plan and review reminder timing and one-time email delivery, Dijkstra's shortest paths, saved road tiles, distance ranking, blind reviews, retry safety, cross-site and signed-out rejection, proxy sign-in, per-member favorites, saving places, OpenStreetMap search, private photo upload, ordering, retries, and delivery, post deletion, and sign-in lockout.
 
 ## Screenshots
 

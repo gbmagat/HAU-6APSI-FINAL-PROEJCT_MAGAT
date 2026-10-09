@@ -25,7 +25,7 @@ This application now uses its own PostgreSQL database and Next.js route handlers
 5. In an interactive terminal, run `node scripts/provision-space.mjs --database our_places --owner-email YOU@example.com --owner-name "Your name" --partner-email PARTNER@example.com --partner-name "Partner name"`. Replace the placeholders and use the actual dedicated database name. The script checks the target, asks for confirmation, and prompts for passwords without echo.
 6. Optionally load the sample places with `psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f db/sample-places.sql`. Real places are added from the map search.
 
-There is no public registration. The two accounts share one space. Private sessions are stored in PostgreSQL; the browser receives only a Secure, HttpOnly session cookie when running over HTTPS.
+Accounts can also be created from the sign-up page: with the `SIGNUP_CODE` set in the environment file, a new account starts its own empty space, and its owner invites the second member with a one-time link from Profile (only a SHA-256 hash of each link is stored). With no `SIGNUP_CODE`, sign-up is closed and only invite links work. The two accounts share one space. Private sessions are stored in PostgreSQL; the browser receives only a Secure, HttpOnly session cookie when running over HTTPS.
 
 ## Run and isolate
 
@@ -43,7 +43,7 @@ Reminder emails need `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `AP
 
 The same schedule emails a member when their partner logged a visit 15 minutes ago that they have not reviewed (the `review_reminders` setting), once per visit.
 
-Databases created before these reminders need `db/migrations/001-plan-reminders.sql` and then `db/migrations/002-review-reminders.sql`. The second marks existing visits as already reminded, so no one gets emails about old visits.
+Databases created before these features need `db/migrations/001-plan-reminders.sql`, `db/migrations/002-review-reminders.sql` and `db/migrations/003-space-invites.sql`, in that order. The second marks existing visits as already reminded, so no one gets emails about old visits.
 
 ## Road tiles
 

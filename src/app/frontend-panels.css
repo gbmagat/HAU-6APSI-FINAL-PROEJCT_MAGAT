@@ -1285,3 +1285,35 @@
   color: var(--color-forest);
   font-weight: 600;
 }
+
+/* Sign-up and sign-in: the link to the other form. */
+.login-card__switch {
+  margin-top: 18px;
+  color: var(--color-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.login-card__switch a {
+  color: var(--color-forest-dark);
+  font-weight: 700;
+}
+
+/* Partner invite link in Profile. */
+.invite-link {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.invite-link input {
+  flex: 1 1 260px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-warm);
+  color: var(--color-navy);
+  font: inherit;
+  font-size: 13px;
+}

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { BrandMark } from "@/components/brand-mark";
 import { LoginForm } from "@/components/login-form";
 import { getCurrentSession } from "@/lib/session";
@@ -14,6 +16,7 @@ export default async function LoginPage({
 }) {
   const configured = Boolean(process.env.DATABASE_URL);
   const allowPreview = process.env.NODE_ENV !== "production";
+  const signupOpen = configured && Boolean(process.env.SIGNUP_CODE);
   let signedIn = false;
   let sessionUnavailable = false;
   if (configured) {
@@ -43,6 +46,7 @@ export default async function LoginPage({
           <h1>Welcome back</h1>
         </div>
         <LoginForm configured={configured} allowPreview={allowPreview} notice={notice} />
+        {signupOpen && <p className="login-card__switch">New here? <Link href="/signup">Create an account</Link></p>}
       </section>
     </main>
   );

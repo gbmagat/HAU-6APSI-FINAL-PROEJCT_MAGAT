@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useState } from "react";
 
+import { PartnerInvite } from "@/components/partner-invite";
 import { usePassport } from "@/components/passport-provider";
 import type { Member } from "@/lib/domain";
 
@@ -231,6 +232,8 @@ export function ProfileSettings() {
           ))}
         </div>
       </section>
+
+      <PartnerInvite />
 
       <section className="settings-panel frontend-panel" aria-labelledby="preferences-title">
         <header>

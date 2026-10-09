@@ -42,6 +42,20 @@ create table space_members (
   unique (space_id, role)
 );
 
+-- One-time links that let a space's owner invite the second member. Only a SHA-256 hash of the
+-- random token is stored; the link itself is shown once to the owner.
+create table space_invites (
+  id uuid primary key default gen_random_uuid(),
+  space_id uuid not null references spaces(id) on delete cascade,
+  token_hash text not null unique check (token_hash ~ '^[0-9a-f]{64}$'),
+  created_by uuid not null references app_users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  check (expires_at > created_at)
+);
+create index space_invites_space_idx on space_invites (space_id);
+
 -- A place is one canonical location; many dated visits may link to it.
 create table places (
   id text primary key check (char_length(id) between 1 and 80),

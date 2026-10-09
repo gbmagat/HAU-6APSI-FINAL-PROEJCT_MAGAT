@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -34,6 +35,8 @@ import { GET as aboutPlace } from "@/app/api/places/about/route";
 import { GET as searchPlaces } from "@/app/api/places/search/route";
 import { GET as findRoute } from "@/app/api/route/route";
 import { POST as signIn } from "@/app/api/auth/login/route";
+import { POST as signUp } from "@/app/api/auth/signup/route";
+import { POST as createInvite } from "@/app/api/invites/route";
 import { POST as submitReview } from "@/app/api/visits/[id]/review/route";
 import { POST as publishVisit } from "@/app/api/visits/route";
 import { hashPassword } from "@/lib/password";
@@ -681,5 +684,83 @@ describe("review reminders by email", () => {
     h.sendMail.mockRejectedValueOnce(new Error("SMTP is down"));
     expect(await sendReviewReminders(minutesFromNow(16))).toEqual({ visits: 1, sent: 0, failed: 1 });
     expect(await sendReviewReminders(minutesFromNow(18))).toEqual({ visits: 1, sent: 1, failed: 0 });
+  });
+});
+
+describe("sign-up and partner invites", () => {
+  const signup = (body: Record<string, unknown>, origin = ORIGIN) => signUp(request("/api/auth/signup", body, origin));
+  const riley = { name: "Riley", email: "riley@example.test", password: "a long enough password" };
+  const memberOf = async (email: string) => (await h.db.query<{ id: string; space_id: string; role: string }>(
+    "select u.id, m.space_id, m.role from app_users u join space_members m on m.user_id = u.id where u.email = $1", [email],
+  )).rows[0];
+  const spaceCount = async () => (await h.db.query<{ count: number }>("select count(*)::int as count from spaces")).rows[0].count;
+
+  beforeEach(() => { vi.stubEnv("DATABASE_URL", "postgres://in-memory/test"); });
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it("creates an account in its own empty space when the sign-up code is right", async () => {
+    vi.stubEnv("SIGNUP_CODE", "class-2026");
+    const response = await signup({ ...riley, code: "class-2026" });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true, role: "owner" });
+    const member = await memberOf("riley@example.test");
+    expect(member.role).toBe("owner");
+    expect(member.space_id).not.toBe(space);
+    const state = await loadServerState(member.space_id, member.id);
+    expect(state.places).toEqual([]);
+    expect(state.members.map((m) => m.displayName)).toEqual(["Riley"]);
+  });
+
+  it("refuses sign-up when closed, with a wrong or missing code, from other sites, and for an email in use", async () => {
+    expect((await signup({ ...riley, code: "class-2026" })).status).toBe(403);
+    vi.stubEnv("SIGNUP_CODE", "class-2026");
+    expect((await signup({ ...riley, code: "wrong" })).status).toBe(403);
+    expect((await signup(riley)).status).toBe(403);
+    expect((await signup({ ...riley, code: "class-2026" }, "https://evil.example")).status).toBe(403);
+    expect((await signup({ ...riley, password: "too short", code: "class-2026" })).status).toBe(400);
+    expect((await signup({ ...riley, email: "owner@example.test", code: "class-2026" })).status).toBe(409);
+    // The refused sign-up left no empty space behind.
+    expect(await spaceCount()).toBe(2);
+  });
+
+  it("lets the owner invite one partner with a link that works once", async () => {
+    vi.stubEnv("SIGNUP_CODE", "class-2026");
+    await signup({ ...riley, code: "class-2026" });
+    const owner = await memberOf("riley@example.test");
+    h.session = { userId: owner.id, spaceId: owner.space_id, email: "riley@example.test", displayName: "Riley", role: "owner" };
+    const invited = await createInvite(request("/api/invites", {}));
+    expect(invited.status).toBe(201);
+    const { token } = await invited.json() as { token: string };
+
+    // Joining needs no sign-up code, even once sign-up is closed again.
+    vi.stubEnv("SIGNUP_CODE", "");
+    const joined = await signup({ name: "Jordan", email: "jordan@example.test", password: "another long password", invite: token });
+    expect(await joined.json()).toEqual({ ok: true, role: "partner" });
+    expect((await memberOf("jordan@example.test")).space_id).toBe(owner.space_id);
+    expect((await loadServerState(owner.space_id, owner.id)).members.map((m) => m.displayName).sort()).toEqual(["Jordan", "Riley"]);
+
+    expect((await signup({ name: "Casey", email: "casey@example.test", password: "yet another long one", invite: token })).status).toBe(410);
+    expect((await createInvite(request("/api/invites", {}))).status).toBe(409);
+  });
+
+  it("refuses invites from a partner, for a full space, and through an expired link", async () => {
+    as(partner);
+    expect((await createInvite(request("/api/invites", {}))).status).toBe(403);
+    as(owner);
+    expect((await createInvite(request("/api/invites", {}))).status).toBe(409);
+
+    const token = "expired-invite-token-0000000000";
+    const { rows: [lone] } = await h.db.query<{ id: string }>("insert into spaces (name) values ('Lone') returning id");
+    const { rows: [solo] } = await h.db.query<{ id: string }>(
+      "insert into app_users (email, password_hash, display_name) values ('solo@example.test', $1, 'Solo') returning id",
+      [await hashPassword("solo password 1234")],
+    );
+    await h.db.query("insert into space_members (space_id, user_id, role) values ($1, $2, 'owner')", [lone.id, solo.id]);
+    await h.db.query(
+      `insert into space_invites (space_id, token_hash, created_by, created_at, expires_at)
+       values ($1, $2, $3, now() - interval '8 days', now() - interval '1 day')`,
+      [lone.id, createHash("sha256").update(token).digest("hex"), solo.id],
+    );
+    expect((await signup({ name: "Late", email: "late@example.test", password: "arrived too late!", invite: token })).status).toBe(410);
   });
 });

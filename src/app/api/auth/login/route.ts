@@ -41,8 +41,7 @@ export async function POST(request: NextRequest) {
       return error("Too many attempts. Please try again in 15 minutes.", 429);
     }
 
-    // Keep unknown email attempts expensive too, without revealing whether an
-    // account exists. There is intentionally no public signup for this space.
+    // Keep unknown email attempts expensive too, without revealing whether an account exists.
     const valid = user
       ? await verifyPassword(parsed.data.password, user.password_hash)
       : (await hashPassword(parsed.data.password.padEnd(12, "x")), false);
