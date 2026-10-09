@@ -46,6 +46,14 @@ This project was built with AI assistance. This file is the record of it.
 - **What I kept, what I changed, and why:** I acted on its findings. I tightened what the repository contains, and the app now connects with a database role that can only read and change rows.
 - **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/2031341
 
+### 2026-10-09 - Create account with a sign-up code, and partner invites
+
+- **Tool:** Claude Code
+- **What I asked for:** A create-account option, so my professor can sign in and review the app without using my own login.
+- **What it gave back:** A sign-up page that needs a sign-up code set on the server, a new empty private space for each new account, and one-time partner invite links from Profile that work for 7 days and are stored only as hashes.
+- **What I kept, what I changed, and why:** It suggested the sign-up code instead of an open form, because open sign-up on a public link would let anyone create accounts and upload photos to a server that also runs my other site. I kept that: I set the code on the server and give it only to my professor, and removing it closes sign-up again.
+- **Commit:** https://github.com/gbmagat/HAU-6APSI-FINAL-PROEJCT_MAGAT/commit/a286a34
+
 ## 2. Where the AI got it wrong
 
 ### Case 1 - The "shortest route" only showed a straight line
